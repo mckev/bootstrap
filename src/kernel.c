@@ -8,6 +8,7 @@
 #endif
 
 #include "terminal.h"
+#include "vga.h"
 
 
 void kernel_main() {
@@ -15,4 +16,7 @@ void kernel_main() {
 	terminal_setcolor(vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLUE));
 	terminal_clear();
 	terminal_writestring("Hello, kernel world!\n");
+
+	vga_initialize();
+	vga_test();
 }

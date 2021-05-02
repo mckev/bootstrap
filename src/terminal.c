@@ -1,25 +1,14 @@
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
 
 #include "terminal.h"
+#include "util.h"
 
-
-static inline uint16_t vga_entry(unsigned char ch, uint8_t color) {
-	return (uint16_t)ch | (uint16_t)color << 8;
-}
-
-static size_t strlen(const char* str) {
-	size_t len = 0;
-	while (str[len])
-		len++;
-	return len;
-}
 
 static const size_t TERMINAL_WIDTH = 80;
 static const size_t TERMINAL_HEIGHT = 25;
-static uint16_t* terminal_buffer = (uint16_t*)0xB8000;
 
+static uint16_t* terminal_buffer = (uint16_t*)0xB8000;
 static size_t terminal_row, terminal_column;
 static uint8_t terminal_color;
 
@@ -28,6 +17,10 @@ void terminal_initialize() {
 	terminal_column = 0;
 	terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
 	terminal_clear();
+}
+
+static inline uint16_t vga_entry(unsigned char ch, uint8_t color) {
+	return (uint16_t)ch | (uint16_t)color << 8;
 }
 
 void terminal_clear() {
