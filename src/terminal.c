@@ -42,14 +42,22 @@ static void terminal_putentryat(char ch, uint8_t color, size_t x, size_t y) {
 	terminal_buffer[index] = vga_entry(ch, color);
 }
 
+static void terminal_linefeed() {
+	terminal_column = 0;
+	if (++terminal_row == TERMINAL_HEIGHT) {
+		// We do not have scroll up function yet
+		terminal_row = 0;
+	}
+}
+
 static void terminal_putchar(char ch) {
+	if (ch == '\n') {
+		terminal_linefeed();
+		return;
+	}
 	terminal_putentryat(ch, terminal_color, terminal_column, terminal_row);
 	if (++terminal_column == TERMINAL_WIDTH) {
-		terminal_column = 0;
-		if (++terminal_row == TERMINAL_HEIGHT) {
-			// We do not have scroll up function yet
-			terminal_row = 0;
-		}
+		terminal_linefeed();
 	}
 }
 
