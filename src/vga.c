@@ -4,9 +4,8 @@
 #include "vga.h"
 
 
-static const int VGA_WIDTH = 320;
-static const int VGA_HEIGHT = 200;
-
+const int VGA_WIDTH = 320;
+const int VGA_HEIGHT = 200;
 static uint8_t* vga_buffer = (uint8_t*)0xA0000;
 
 
@@ -17,17 +16,16 @@ void vga_initialize() {
 	int32(0x10, &regs);
 }
 
-void vga_test() {
-	// Set background blue
-	for (int y = 0; y < VGA_HEIGHT; y++) {
-		for (int x = 0; x < VGA_WIDTH; x++) {
-			vga_buffer[y * VGA_WIDTH + x] = 1;
-		}
-	}
-	// Draw horizontal lines from 0,80 to 200,240 in multiple colors
-	for (int y = 0; y < VGA_HEIGHT; y++) {
-		for (int x = 80; x < 240; x++) {
-			vga_buffer[y * VGA_WIDTH + x] = y;
-		}
-	}
+#define PALETTE_WRITE 0x3C8
+#define PALETTE_DATA 0x3C9
+
+void vga_set_palette_color(uint8_t palette_no, uint8_t r, uint8_t g, uint8_t b) {
+	outportb(PALETTE_WRITE, palette_no);
+	outportb(PALETTE_DATA, r);
+	outportb(PALETTE_DATA, g);
+	outportb(PALETTE_DATA, b);
+}
+
+void vga_draw_pixel(int x, int y, uint8_t palette_no) {
+	vga_buffer[y * VGA_WIDTH + x] = palette_no;
 }

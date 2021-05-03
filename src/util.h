@@ -6,14 +6,14 @@
 
 
 // Writing and Reading I/O Port
-static inline void outportb(uint16_t port, uint8_t data) {
+inline void outportb(uint16_t port, uint8_t data) {
 	// Ref:
 	// https://www.osdev.org/howtos/2/
 	// https://gcc.gnu.org/onlinedocs/gcc/Constraints.html
 	asm("outb dx, al" : : "d"(port), "a"(data));
 }
 
-static inline uint8_t inportb(uint16_t port) {
+inline uint8_t inportb(uint16_t port) {
 	uint8_t data;
 	asm("inb al, dx" : "=a"(data) : "d"(port));
 	return data;
@@ -32,7 +32,7 @@ extern void int32(unsigned char intnum, regs16_t* regs);
 
 
 // Misc functions
-static inline size_t strlen(const char* str) {
+inline size_t strlen(const char* str) {
 	size_t len = 0;
 	while (str[len]) {
 		len++;
