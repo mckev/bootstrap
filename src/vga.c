@@ -21,6 +21,7 @@ void vga_initialize() {
 
 void vga_set_palette_color(uint8_t palette_no, uint8_t r, uint8_t g, uint8_t b) {
 	outportb(PALETTE_WRITE, palette_no);
+	// Valid range of r, g, b is 0 - 63
 	outportb(PALETTE_DATA, r);
 	outportb(PALETTE_DATA, g);
 	outportb(PALETTE_DATA, b);
