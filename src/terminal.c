@@ -13,7 +13,7 @@ static size_t terminal_row, terminal_column;
 static uint8_t terminal_color;
 
 
-void terminal_initialize() {
+void terminal_init() {
 	terminal_row = 0;
 	terminal_column = 0;
 	terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);

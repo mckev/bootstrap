@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#include "util.h"
+#include "system.h"
 #include "vga.h"
 
 
@@ -9,7 +9,7 @@ const int VGA_HEIGHT = 200;
 static uint8_t* vga_buffer = (uint8_t*)0xA0000;
 
 
-void vga_initialize() {
+void vga_init() {
 	// Set video mode 320x200 256 color graphics (VGA) by calling BIOS int 10h
 	regs16_t regs;
 	regs.ax = 0x0013;

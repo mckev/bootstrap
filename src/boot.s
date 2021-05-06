@@ -12,12 +12,14 @@
 .long FLAGS
 .long CHECKSUM
 
+
 /* The multiboot standard does not define the value of the stack pointer register (esp) and it is up to the kernel to provide a stack. This allocates room for a small stack by creating a symbol at the bottom of it, then allocating 16384 bytes for it, and finally creating a symbol at the top. The stack grows downwards on x86. The stack is in its own section so it can be marked nobits, which means the kernel file is smaller because it does not contain an uninitialized stack. The stack on x86 must be 16-byte aligned according to the System V ABI standard and de-facto extensions. The compiler will assume the stack is properly aligned and failure to align the stack will result in undefined behavior. */
 .section .bss
 .align 16
 stack_bottom:
-.skip 16384 # 16 KiB
+    .skip 16384 # 16 KiB
 stack_top:
+
 
 /* The linker script specifies _start as the entry point to the kernel and the bootloader will jump to this position once the kernel has been loaded. It doesn't make sense to return from this function as the bootloader is gone. */
 .section .text
@@ -27,9 +29,10 @@ _start:
     /* The bootloader has loaded us into 32-bit protected mode on a x86 machine. Interrupts are disabled. Paging is disabled. The processor state is as defined in the multiboot standard. The kernel has full control of the CPU. The kernel can only make use of hardware features and any code it provides as part of itself. There's no printf function, unless the kernel provides its own <stdio.h> header and a printf implementation. There are no security restrictions, no safeguards, no debugging mechanisms, only what the kernel provides itself. It has absolute and complete power over the machine. */
 
     /* To set up a stack, we set the esp register to point to the top of the stack (as it grows downwards on x86 systems). This is necessarily done in assembly as languages such as C cannot function without a stack. */
-    mov $stack_top, %esp
+    movl $stack_top, %esp
 
     /* This is a good place to initialize crucial processor state before the high-level kernel is entered. It's best to minimize the early environment where crucial features are offline. Note that the processor is not fully initialized yet: Features such as floating point instructions and instruction set extensions are not initialized yet. The GDT should be loaded here. Paging should be enabled here. C++ features such as global constructors and exceptions will require runtime support to work as well. */
+    call gdt_load
 
     /* Enter the high-level kernel. The ABI requires the stack is 16-byte aligned at the time of the call instruction (which afterwards pushes the return pointer of size 4 bytes). The stack was originally 16-byte aligned above and we've pushed a multiple of 16 bytes to the stack since (pushed 0 bytes so far), so the alignment has thus been preserved and the call is well defined. */
     call kernel_main
@@ -41,6 +44,159 @@ _start:
     cli
 1:  hlt
     jmp 1b
+
+
+/*
+   Global Descriptor Table
+   Refs:
+      https://wiki.osdev.org/Interrupts_tutorial#Interrupts_in_GRUB
+      https://forum.osdev.org/viewtopic.php?f=1&t=33160&p=285871#p285871 (see "pvc" answer)
+      https://github.com/phf/xv6/blob/master/multiboot.S
+*/
+gdt_begin:
+gdt_null_seg:
+.byte 0, 0, 0, 0, 0, 0, 0, 0
+gdt_code_seg:
+.byte 0xff, 0xff
+.byte 0, 0
+.byte 0
+.byte 0b10011010
+.byte 0b11001111
+.byte 0
+gdt_data_seg:
+.byte 0xff, 0xff
+.byte 0, 0
+.byte 0
+.byte 0b10010010
+.byte 0b11001111
+.byte 0
+gdt_end:
+gdt_desc:
+.word (gdt_end - gdt_begin - 1)
+.long gdt_begin
+
+gdt_load:
+    lgdt gdt_desc
+    ljmp $0x0008, $fix_cs
+fix_cs:
+    movw $0x0010, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %ss
+    movw $0, %ax
+    movw %ax, %fs
+    movw %ax, %gs
+    ret
+
+
+/* Interrupt Descriptor Table */
+.global idt_load
+.type idt_load, @function
+idt_load:
+    mov 4(%esp), %eax
+    lidt (%eax)
+    ret
+
+
+/* Interrupt Service Routines */
+.macro ISR_NO_ERR index
+    .global _isr\index
+    _isr\index:
+        cli
+        push $0
+        push $\index
+        jmp isr_common
+.endm
+
+.macro ISR_ERR index
+    .global _isr\index
+    _isr\index:
+        cli
+        push $\index
+        jmp isr_common
+.endm
+
+ISR_NO_ERR 0
+ISR_NO_ERR 1
+ISR_NO_ERR 2
+ISR_NO_ERR 3
+ISR_NO_ERR 4
+ISR_NO_ERR 5
+ISR_NO_ERR 6
+ISR_NO_ERR 7
+ISR_ERR 8
+ISR_NO_ERR 9
+ISR_ERR 10
+ISR_ERR 11
+ISR_ERR 12
+ISR_ERR 13
+ISR_ERR 14
+ISR_NO_ERR 15
+ISR_NO_ERR 16
+ISR_NO_ERR 17
+ISR_NO_ERR 18
+ISR_NO_ERR 19
+ISR_NO_ERR 20
+ISR_NO_ERR 21
+ISR_NO_ERR 22
+ISR_NO_ERR 23
+ISR_NO_ERR 24
+ISR_NO_ERR 25
+ISR_NO_ERR 26
+ISR_NO_ERR 27
+ISR_NO_ERR 28
+ISR_NO_ERR 29
+ISR_NO_ERR 30
+ISR_NO_ERR 31
+ISR_NO_ERR 32
+ISR_NO_ERR 33
+ISR_NO_ERR 34
+ISR_NO_ERR 35
+ISR_NO_ERR 36
+ISR_NO_ERR 37
+ISR_NO_ERR 38
+ISR_NO_ERR 39
+ISR_NO_ERR 40
+ISR_NO_ERR 41
+ISR_NO_ERR 42
+ISR_NO_ERR 43
+ISR_NO_ERR 44
+ISR_NO_ERR 45
+ISR_NO_ERR 46
+ISR_NO_ERR 47
+
+/* defined in isr.c */
+.extern isr_handler
+.type isr_handler, @function
+
+isr_common:
+    pusha
+    push %ds
+    push %es
+    push %fs
+    push %gs
+
+    mov $0x10, %ax
+    mov %ax, %ds
+    mov %ax, %es
+    mov %ax, %fs
+    mov %ax, %gs
+    cld
+
+    push %esp
+    call isr_handler
+    add $4, %esp
+
+    pop %gs
+    pop %fs
+    pop %es
+    pop %ds
+
+    popa
+
+    add $8, %esp
+    iret
+
 
 /* Set the size of the _start symbol to the current location '.' minus its start. This is useful when debugging or when you implement call tracing. */
 .size _start, . - _start

@@ -24,9 +24,24 @@ nasm -felf32 int32.asm -o int32.o
 OBJ_FILES="$OBJ_FILES int32.o"
 
 echo "Compiling other files"
+rm -f idt.o
+$GCC $GCC_OPTIONS -c idt.c -o idt.o
+OBJ_FILES="$OBJ_FILES idt.o"
+rm -f irq.o
+$GCC $GCC_OPTIONS -c irq.c -o irq.o
+OBJ_FILES="$OBJ_FILES irq.o"
+rm -f isr.o
+$GCC $GCC_OPTIONS -c isr.c -o isr.o
+OBJ_FILES="$OBJ_FILES isr.o"
+rm -f system.o
+$GCC $GCC_OPTIONS -c system.c -o system.o
+OBJ_FILES="$OBJ_FILES system.o"
 rm -f terminal.o
 $GCC $GCC_OPTIONS -c terminal.c -o terminal.o
 OBJ_FILES="$OBJ_FILES terminal.o"
+rm -f timer.o
+$GCC $GCC_OPTIONS -c timer.c -o timer.o
+OBJ_FILES="$OBJ_FILES timer.o"
 rm -f vga.o
 $GCC $GCC_OPTIONS -c vga.c -o vga.o
 OBJ_FILES="$OBJ_FILES vga.o"
