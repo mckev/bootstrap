@@ -14,14 +14,6 @@ uint8_t inportb(uint16_t port) {
 	return data;
 }
 
-void memset(void* dst, uint8_t val, size_t count) {
-	uint8_t* d = dst;
-
-	while (count-- > 0) {
-		*d++ = val;
-	}
-}
-
 void panic(const char* err) {
 	UNUSED(err);
 }

@@ -5,7 +5,7 @@
 #include "system.h"
 
 
-void irq_install(size_t i, void (*handler)(struct registers*));
+void irq_install(size_t i, void (*handler)(regs32_t*));
 void irq_init();
 
 

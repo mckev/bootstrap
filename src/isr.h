@@ -5,7 +5,7 @@
 #include "system.h"
 
 
-void isr_install(size_t i, void (*handler)(struct registers*));
+void isr_install(size_t i, void (*handler)(regs32_t*));
 void isr_init();
 
 

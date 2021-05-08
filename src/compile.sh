@@ -18,7 +18,7 @@ rm -f kernel.o
 $GCC $GCC_OPTIONS -c kernel.c -o kernel.o
 OBJ_FILES="$OBJ_FILES kernel.o"
 
-echo "Compiling int32.asm to access BIOS"
+echo "Compiling int32.asm to access BIOS interrupt"
 rm -f int32.o
 nasm -felf32 int32.asm -o int32.o
 OBJ_FILES="$OBJ_FILES int32.o"
@@ -42,6 +42,9 @@ OBJ_FILES="$OBJ_FILES terminal.o"
 rm -f timer.o
 $GCC $GCC_OPTIONS -c timer.c -o timer.o
 OBJ_FILES="$OBJ_FILES timer.o"
+rm -f util.o
+$GCC $GCC_OPTIONS -c util.c -o util.o
+OBJ_FILES="$OBJ_FILES util.o"
 rm -f vga.o
 $GCC $GCC_OPTIONS -c vga.c -o vga.o
 OBJ_FILES="$OBJ_FILES vga.o"

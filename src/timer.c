@@ -32,7 +32,7 @@ uint64_t timer_get() {
 	return state.ticks;
 }
 
-static void timer_handler(struct registers* regs) {
+static void timer_handler(regs32_t* regs) {
 	UNUSED(regs);
 	state.ticks++;
 }

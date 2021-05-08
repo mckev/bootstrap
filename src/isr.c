@@ -5,56 +5,57 @@
 
 #define NUM_ISRS 48
 
-extern void _isr0(struct registers*);
-extern void _isr1(struct registers*);
-extern void _isr2(struct registers*);
-extern void _isr3(struct registers*);
-extern void _isr4(struct registers*);
-extern void _isr5(struct registers*);
-extern void _isr6(struct registers*);
-extern void _isr7(struct registers*);
-extern void _isr8(struct registers*);
-extern void _isr9(struct registers*);
-extern void _isr10(struct registers*);
-extern void _isr11(struct registers*);
-extern void _isr12(struct registers*);
-extern void _isr13(struct registers*);
-extern void _isr14(struct registers*);
-extern void _isr15(struct registers*);
-extern void _isr16(struct registers*);
-extern void _isr17(struct registers*);
-extern void _isr18(struct registers*);
-extern void _isr19(struct registers*);
-extern void _isr20(struct registers*);
-extern void _isr21(struct registers*);
-extern void _isr22(struct registers*);
-extern void _isr23(struct registers*);
-extern void _isr24(struct registers*);
-extern void _isr25(struct registers*);
-extern void _isr26(struct registers*);
-extern void _isr27(struct registers*);
-extern void _isr28(struct registers*);
-extern void _isr29(struct registers*);
-extern void _isr30(struct registers*);
-extern void _isr31(struct registers*);
-extern void _isr32(struct registers*);
-extern void _isr33(struct registers*);
-extern void _isr34(struct registers*);
-extern void _isr35(struct registers*);
-extern void _isr36(struct registers*);
-extern void _isr37(struct registers*);
-extern void _isr38(struct registers*);
-extern void _isr39(struct registers*);
-extern void _isr40(struct registers*);
-extern void _isr41(struct registers*);
-extern void _isr42(struct registers*);
-extern void _isr43(struct registers*);
-extern void _isr44(struct registers*);
-extern void _isr45(struct registers*);
-extern void _isr46(struct registers*);
-extern void _isr47(struct registers*);
+// defined in boot.s
+extern void _isr0(regs32_t*);
+extern void _isr1(regs32_t*);
+extern void _isr2(regs32_t*);
+extern void _isr3(regs32_t*);
+extern void _isr4(regs32_t*);
+extern void _isr5(regs32_t*);
+extern void _isr6(regs32_t*);
+extern void _isr7(regs32_t*);
+extern void _isr8(regs32_t*);
+extern void _isr9(regs32_t*);
+extern void _isr10(regs32_t*);
+extern void _isr11(regs32_t*);
+extern void _isr12(regs32_t*);
+extern void _isr13(regs32_t*);
+extern void _isr14(regs32_t*);
+extern void _isr15(regs32_t*);
+extern void _isr16(regs32_t*);
+extern void _isr17(regs32_t*);
+extern void _isr18(regs32_t*);
+extern void _isr19(regs32_t*);
+extern void _isr20(regs32_t*);
+extern void _isr21(regs32_t*);
+extern void _isr22(regs32_t*);
+extern void _isr23(regs32_t*);
+extern void _isr24(regs32_t*);
+extern void _isr25(regs32_t*);
+extern void _isr26(regs32_t*);
+extern void _isr27(regs32_t*);
+extern void _isr28(regs32_t*);
+extern void _isr29(regs32_t*);
+extern void _isr30(regs32_t*);
+extern void _isr31(regs32_t*);
+extern void _isr32(regs32_t*);
+extern void _isr33(regs32_t*);
+extern void _isr34(regs32_t*);
+extern void _isr35(regs32_t*);
+extern void _isr36(regs32_t*);
+extern void _isr37(regs32_t*);
+extern void _isr38(regs32_t*);
+extern void _isr39(regs32_t*);
+extern void _isr40(regs32_t*);
+extern void _isr41(regs32_t*);
+extern void _isr42(regs32_t*);
+extern void _isr43(regs32_t*);
+extern void _isr44(regs32_t*);
+extern void _isr45(regs32_t*);
+extern void _isr46(regs32_t*);
+extern void _isr47(regs32_t*);
 
-static void (*stubs[NUM_ISRS])(struct registers*) = {
+static void (*stubs[NUM_ISRS])(regs32_t*) = {
 	_isr0,
 	_isr1,
 	_isr2,
@@ -140,23 +141,23 @@ static const char* exceptions[32] = {
 
 static struct {
 	size_t index;
-	void (*stub)(struct registers*);
+	void (*stub)(regs32_t*);
 } isrs[NUM_ISRS];
 
-static void (*handlers[NUM_ISRS])(struct registers*) = { 0 };
+static void (*handlers[NUM_ISRS])(regs32_t*) = { 0 };
 
-void isr_install(size_t i, void (*handler)(struct registers*)) {
+void isr_install(size_t i, void (*handler)(regs32_t*)) {
 	handlers[i] = handler;
 }
 
-// referenced from start.S
-void isr_handler(struct registers* regs) {
+// referenced from boot.s
+void isr_handler(regs32_t* regs) {
 	if (handlers[regs->int_no]) {
 		handlers[regs->int_no](regs);
 	}
 }
 
-static void exception_handler(struct registers* regs) {
+static void exception_handler(regs32_t* regs) {
 	panic(exceptions[regs->int_no]);
 }
 
@@ -166,7 +167,8 @@ void isr_init() {
 		isrs[i].stub = stubs[i];
 		idt_set(isrs[i].index, isrs[i].stub, 0x08, 0x8E);
 	}
-
+	// ISR 0 - 31 is handled by exception_handler()
+	// ISR 32 - 47 will be used for IRQ 0 - 15
 	for (size_t i = 0; i < 32; i++) {
 		isr_install(i, exception_handler);
 	}

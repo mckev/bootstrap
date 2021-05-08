@@ -26,7 +26,7 @@ void kernel_main() {
 	irq_init();
 	timer_init();
 
-	// VGA Text mode
+	// VGA text mode
 	terminal_init();
 	terminal_setcolor(vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLUE));
 	terminal_clear();
@@ -42,9 +42,9 @@ void kernel_main() {
 		}
 	}
 
-	// VGA Graphics mode
+	// VGA graphics mode
 	vga_init();
-	// Set palette
+	// Set palette color
 	for (int i = 0; i < 64; i++) { vga_set_palette_color(i, i, i, i); }			// Shades of gray
 	for (int i = 0; i < 64; i++) { vga_set_palette_color(64 + i, i, 0, 0); }	// Shades of red
 	for (int i = 0; i < 64; i++) { vga_set_palette_color(128 + i, 0, i, 0); }	// Shades of green

@@ -53,39 +53,38 @@ _start:
       https://forum.osdev.org/viewtopic.php?f=1&t=33160&p=285871#p285871 (see "pvc" answer)
       https://github.com/phf/xv6/blob/master/multiboot.S
 */
-gdt_begin:
-gdt_null_seg:
-.byte 0, 0, 0, 0, 0, 0, 0, 0
-gdt_code_seg:
-.byte 0xff, 0xff
-.byte 0, 0
-.byte 0
-.byte 0b10011010
-.byte 0b11001111
-.byte 0
-gdt_data_seg:
-.byte 0xff, 0xff
-.byte 0, 0
-.byte 0
-.byte 0b10010010
-.byte 0b11001111
-.byte 0
-gdt_end:
-gdt_desc:
-.word (gdt_end - gdt_begin - 1)
-.long gdt_begin
+gdt_base:
+    // null segment descriptor
+    .long 0x00000000
+    .long 0x00000000
+    // code segment descriptor
+    .word 0xFFFF                            // limit  0:15
+    .word 0x0000                            // base   0:15
+    .byte 0x00                              // base  16:23
+    .byte 0b10011010                        // present, iopl/0, code, execute/read
+    .byte 0b11001111                        // 4 KB granularity, 32-bit selector; limit 16:19
+    .byte 0x00                              // base  24:31
+    // data segment descriptor
+    .word 0xFFFF                            // limit  0:15
+    .word 0x0000                            // base   0:15
+    .byte 0x00                              // base  16:23
+    .byte 0b10010010                        // present, iopl/0, data, read/write
+    .byte 0b11001111                        // 4 KB granularity, 32-bit selector; limit 16:19
+    .byte 0x00                              // base  24:31
+gdt_ptr:
+    .word (gdt_ptr - gdt_base - 1)
+    .long gdt_base
 
 gdt_load:
-    lgdt gdt_desc
-    ljmp $0x0008, $fix_cs
+    lgdt gdt_ptr
+    ljmp $(1 << 3), $fix_cs                 // GDTENTRY(1) = 0x0008 = code
 fix_cs:
-    movw $0x0010, %ax
+    movw $(2 << 3), %ax                     // GDTENTRY(2) = 0x0010 = data
     movw %ax, %ds
     movw %ax, %es
-    movw %ax, %ss
-    movw $0, %ax
     movw %ax, %fs
     movw %ax, %gs
+    movw %ax, %ss
     ret
 
 
@@ -165,7 +164,6 @@ ISR_NO_ERR 45
 ISR_NO_ERR 46
 ISR_NO_ERR 47
 
-/* defined in isr.c */
 .extern isr_handler
 .type isr_handler, @function
 
@@ -176,15 +174,15 @@ isr_common:
     push %fs
     push %gs
 
-    mov $0x10, %ax
-    mov %ax, %ds
-    mov %ax, %es
-    mov %ax, %fs
-    mov %ax, %gs
+    movw $(2 << 3), %ax                     // GDTENTRY(2) = 0x0010 = data
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
     cld
 
     push %esp
-    call isr_handler
+    call isr_handler                        // defined in isr.c
     add $4, %esp
 
     pop %gs

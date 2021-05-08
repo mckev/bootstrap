@@ -2,6 +2,7 @@
 
 #include "idt.h"
 #include "system.h"
+#include "util.h"
 
 
 struct idt_entry {
@@ -22,10 +23,10 @@ static struct {
 	struct idt_ptr pointer;
 } idt;
 
-// in boot.s
+// defined in boot.s
 extern void idt_load();
 
-void idt_set(uint8_t index, void (*base)(struct registers*), uint16_t selector, uint8_t flags) {
+void idt_set(uint8_t index, void (*base)(regs32_t*), uint16_t selector, uint8_t flags) {
 	idt.entries[index] = (struct idt_entry){
 		.base_low = ((uintptr_t)base) & 0xFFFF,
 		.base_high = (((uintptr_t)base) >> 16) & 0xFFFF,

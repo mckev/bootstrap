@@ -27,10 +27,11 @@
 	);								\
 } while (0)
 
-static void (*handlers[32])(struct registers* regs) = { 0 };
+static void (*handlers[32])(regs32_t* regs) = { 0 };
 
-static void stub(struct registers* regs) {
-	if (regs->int_no <= 47 && regs->int_no >= 32) {
+static void stub(regs32_t* regs) {
+	// Notice we have mapped IRQ 0 - 15 into ISR 32 - 47
+	if (regs->int_no >= 32 && regs->int_no <= 47) {
 		if (handlers[regs->int_no - 32]) {
 			handlers[regs->int_no - 32](regs);
 		}
@@ -69,7 +70,7 @@ static void irq_clear_mask(size_t i) {
 	outportb(port, value);
 }
 
-void irq_install(size_t i, void (*handler)(struct registers*)) {
+void irq_install(size_t i, void (*handler)(regs32_t*)) {
 	CLI();
 	handlers[i] = handler;
 	irq_clear_mask(i);
@@ -79,6 +80,7 @@ void irq_install(size_t i, void (*handler)(struct registers*)) {
 void irq_init() {
 	irq_remap();
 	for (size_t i = 0; i < 16; i++) {
+		// IRQ 0 - 15 is mapped into ISR 32 - 47
 		isr_install(32 + i, stub);
 	}
 }
