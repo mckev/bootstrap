@@ -15,7 +15,7 @@ for i in range(256):
     print(f".globl trap_vector{i}")
     print(f"trap_vector{i}:")
     if i not in [8, 10, 11, 12, 13, 14, 17]:
-        print(f"  pushl $0")
+        print("  pushl $0")
     print(f"  pushl ${i}")
     print("  jmp alltraps")
 print()

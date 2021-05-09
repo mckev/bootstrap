@@ -31,7 +31,7 @@ void kernel_main() {
 	terminal_setcolor(vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLUE));
 	terminal_clear();
 	terminal_writestring("Hello, kernel world!\n");
-	terminal_writestring("Please wait for 10 seconds...\n");
+	terminal_writestring("Please wait 10 seconds...\n");
 	uint64_t last_ticks = 0;
 	while (last_ticks < 10 * TIMER_TPS) {
 		uint64_t cur_ticks = ticks;
