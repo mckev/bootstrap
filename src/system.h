@@ -12,21 +12,23 @@
 
 // Registers
 typedef struct PACKED {
-	uint32_t gs, fs, es, ds;
-	uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
-	uint32_t int_no, err_code;
-	uint32_t eip, cs, eflags, useresp, ss;
-} regs32_t;
-
-typedef struct PACKED {
 	uint16_t di, si, bp, sp, bx, dx, cx, ax;
 	uint16_t gs, fs, es, ds, eflags;
 } regs16_t;
 
 
 // Assembly
-#define CLI() asm ("cli")
-#define STI() asm ("sti")
+#define CLI() asm("cli")
+#define STI() asm("sti")
+
+
+// GDT Segments
+#define SEG_KCODE 1
+#define SEG_KDATA 2
+
+
+// IRQ
+#define IRQ_TIMER 0
 
 
 // Writing and Reading I/O Port

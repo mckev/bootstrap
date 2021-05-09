@@ -2,10 +2,10 @@
 #define TIMER_H
 
 
-// Number chosen to be integer divisor of PIC frequency
-#define TIMER_TPS 363
+#define TIMER_TPS 100
 
-uint64_t timer_get();
+extern volatile uint64_t ticks;					// "volatile" hints the C compiler that this global variable may be updated from other place (i.e. interrupt / IRQ 0), so don't optimize
+
 void timer_init();
 
 

@@ -1,47 +1,31 @@
-#include "irq.h"
+// Intel 8253/8254/82C54 Programmable Interval Timer (PIT)
+
+
 #include "system.h"
 #include "timer.h"
+#include "trap.h"
 
 
-#define PIT_A		0x40
-#define PIT_B		0x41
-#define PIT_C		0x42
-#define PIT_CONTROL	0x43
-#define PIT_MASK	0xFF
-#define PIT_SET		0x36
-#define PIT_HZ		1193180
-#define DIV_OF_FREQ(_f) (PIT_HZ / (_f))
-#define FREQ_OF_DIV(_d) (PIT_HZ / (_d))
-#define REAL_FREQ_OF_FREQ(_f) (FREQ_OF_DIV(DIV_OF_FREQ((_f))))
+#define IO_TIMER1		0x040				// 8253 Timer #1
+#define TIMER_MODE		(IO_TIMER1 + 3)		// timer mode port
 
-static struct {
-	uint64_t frequency;
-	uint64_t divisor;
-	uint64_t ticks;
-} state;
+// Frequency of all three count-down timers.
+// (TIMER_FREQ/freq) is the appropriate count to generate a frequency of freq Hz.
+
+#define TIMER_FREQ		1193182
+#define TIMER_DIV(x)	((TIMER_FREQ+(x)/2)/(x))
+
+#define TIMER_SEL0		0x00				// select counter 0
+#define TIMER_RATEGEN	0x04				// mode 2, rate generator
+#define TIMER_16BIT		0x30				// r/w counter 16 bits, LSB first
 
 
-static void timer_set(int hz) {
-	int divisor = PIT_HZ / hz;
-	outportb(PIT_CONTROL, PIT_SET);
-	outportb(PIT_A, divisor & PIT_MASK);
-	outportb(PIT_A, (divisor >> 8) & PIT_MASK);
-}
-
-uint64_t timer_get() {
-	return state.ticks;
-}
-
-static void timer_handler(regs32_t* regs) {
-	UNUSED(regs);
-	state.ticks++;
-}
+volatile uint64_t ticks = 0;
 
 void timer_init() {
-	const uint64_t freq = REAL_FREQ_OF_FREQ(TIMER_TPS);
-	state.frequency = freq;							// freq = TIMER_TPS = 363
-	state.divisor = DIV_OF_FREQ(freq);
-	state.ticks = 0;
-	timer_set(TIMER_TPS);
-	irq_install(0, timer_handler);
+	// Interrupt TIMER_TPS times/sec
+	outportb(TIMER_MODE, TIMER_SEL0 | TIMER_RATEGEN | TIMER_16BIT);
+	outportb(IO_TIMER1, TIMER_DIV(TIMER_TPS) % 256);
+	outportb(IO_TIMER1, TIMER_DIV(TIMER_TPS) / 256);
+	pic_enable(IRQ_TIMER);
 }

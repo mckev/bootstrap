@@ -8,11 +8,10 @@
 #endif
 
 
-#include "idt.h"
-#include "irq.h"
-#include "isr.h"
+#include "system.h"
 #include "terminal.h"
 #include "timer.h"
+#include "trap.h"
 #include "util.h"
 #include "vga.h"
 
@@ -21,10 +20,11 @@ void kernel_main() {
 	char buffer[1024];
 
 	// Initialize hardware
+	pic_init();
+	trap_vectors_init();
 	idt_init();
-	isr_init();
-	irq_init();
 	timer_init();
+	STI();
 
 	// VGA text mode
 	terminal_init();
@@ -34,9 +34,9 @@ void kernel_main() {
 	terminal_writestring("Please wait for 10 seconds...\n");
 	uint64_t last_ticks = 0;
 	while (last_ticks < 10 * TIMER_TPS) {
-		uint64_t ticks = timer_get();
-		if (ticks - last_ticks >= TIMER_TPS) {
-			terminal_writestring(itoa(timer_get(), buffer));
+		uint64_t cur_ticks = ticks;
+		if (cur_ticks - last_ticks >= TIMER_TPS) {
+			terminal_writestring(itoa(cur_ticks, buffer));
 			terminal_writestring("\n");
 			last_ticks += TIMER_TPS;
 		}

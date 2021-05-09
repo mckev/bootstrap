@@ -13,6 +13,14 @@ rm -f boot.o
 $AS boot.s -o boot.o
 OBJ_FILES="$OBJ_FILES boot.o"
 
+echo "Compiling trap routines"
+rm -f trap_asm.o
+$AS trap_asm.s -o trap_asm.o
+OBJ_FILES="$OBJ_FILES trap_asm.o"
+rm -f trap_vectors.o
+$AS trap_vectors.s -o trap_vectors.o
+OBJ_FILES="$OBJ_FILES trap_vectors.o"
+
 echo "Compiling kernel.c"
 rm -f kernel.o
 $GCC $GCC_OPTIONS -c kernel.c -o kernel.o
@@ -24,15 +32,6 @@ nasm -felf32 int32.asm -o int32.o
 OBJ_FILES="$OBJ_FILES int32.o"
 
 echo "Compiling other files"
-rm -f idt.o
-$GCC $GCC_OPTIONS -c idt.c -o idt.o
-OBJ_FILES="$OBJ_FILES idt.o"
-rm -f irq.o
-$GCC $GCC_OPTIONS -c irq.c -o irq.o
-OBJ_FILES="$OBJ_FILES irq.o"
-rm -f isr.o
-$GCC $GCC_OPTIONS -c isr.c -o isr.o
-OBJ_FILES="$OBJ_FILES isr.o"
 rm -f system.o
 $GCC $GCC_OPTIONS -c system.c -o system.o
 OBJ_FILES="$OBJ_FILES system.o"
@@ -42,6 +41,9 @@ OBJ_FILES="$OBJ_FILES terminal.o"
 rm -f timer.o
 $GCC $GCC_OPTIONS -c timer.c -o timer.o
 OBJ_FILES="$OBJ_FILES timer.o"
+rm -f trap.o
+$GCC $GCC_OPTIONS -c trap.c -o trap.o
+OBJ_FILES="$OBJ_FILES trap.o"
 rm -f util.o
 $GCC $GCC_OPTIONS -c util.c -o util.o
 OBJ_FILES="$OBJ_FILES util.o"

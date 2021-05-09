@@ -37,13 +37,14 @@ _start:
     /* Enter the high-level kernel. The ABI requires the stack is 16-byte aligned at the time of the call instruction (which afterwards pushes the return pointer of size 4 bytes). The stack was originally 16-byte aligned above and we've pushed a multiple of 16 bytes to the stack since (pushed 0 bytes so far), so the alignment has thus been preserved and the call is well defined. */
     call kernel_main
 
-    /* If the system has nothing more to do, put the computer into an infinite loop. To do that:
+    /* If kernel returns (it shouldn't), put the computer into an infinite loop. To do that:
     1) Disable interrupts with cli (clear interrupt enable in eflags). They are already disabled by the bootloader, so this is not needed. Mind that you might later enable interrupts and return from kernel_main (which is sort of nonsensical to do).
-    2) Wait for the next interrupt to arrive with hlt (halt instruction). Since they are disabled, this will lock up the computer.
+    2) Wait for the next interrupt to arrive with hlt (halt instruction). Since they're disabled, this will lock up the computer.
     3) Jump to the hlt instruction if it ever wakes up due to a non-maskable interrupt occurring or due to system management mode. */
     cli
-1:  hlt
-    jmp 1b
+spin:
+    hlt
+    jmp spin
 
 
 /*
@@ -53,18 +54,19 @@ _start:
       https://forum.osdev.org/viewtopic.php?f=1&t=33160&p=285871#p285871 (see "pvc" answer)
       https://github.com/phf/xv6/blob/master/multiboot.S
 */
+.align 4
 gdt_base:
-    // null segment descriptor
+    // GDT Entry 0: Null Segment Descriptor
     .long 0x00000000
     .long 0x00000000
-    // code segment descriptor
+    // GDT Entry 1: Code Segment Descriptor
     .word 0xFFFF                            // limit  0:15
     .word 0x0000                            // base   0:15
     .byte 0x00                              // base  16:23
     .byte 0b10011010                        // present, iopl/0, code, execute/read
     .byte 0b11001111                        // 4 KB granularity, 32-bit selector; limit 16:19
     .byte 0x00                              // base  24:31
-    // data segment descriptor
+    // GDT Entry 2: Data Segment Descriptor
     .word 0xFFFF                            // limit  0:15
     .word 0x0000                            // base   0:15
     .byte 0x00                              // base  16:23
@@ -75,125 +77,20 @@ gdt_ptr:
     .word (gdt_ptr - gdt_base - 1)
     .long gdt_base
 
+.set SEG_KCODE, 1
+.set SEG_KDATA, 2
+
 gdt_load:
     lgdt gdt_ptr
-    ljmp $(1 << 3), $fix_cs                 // GDTENTRY(1) = 0x0008 = code
+    ljmp $(SEG_KCODE << 3), $fix_cs         // 0x0008 (code segment)
 fix_cs:
-    movw $(2 << 3), %ax                     // GDTENTRY(2) = 0x0010 = data
+    movw $(SEG_KDATA << 3), %ax             // 0x0010 (data segment)
     movw %ax, %ds
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
     movw %ax, %ss
     ret
-
-
-/* Interrupt Descriptor Table */
-.global idt_load
-.type idt_load, @function
-idt_load:
-    mov 4(%esp), %eax
-    lidt (%eax)
-    ret
-
-
-/* Interrupt Service Routines */
-.macro ISR_NO_ERR index
-    .global _isr\index
-    _isr\index:
-        cli
-        push $0
-        push $\index
-        jmp isr_common
-.endm
-
-.macro ISR_ERR index
-    .global _isr\index
-    _isr\index:
-        cli
-        push $\index
-        jmp isr_common
-.endm
-
-ISR_NO_ERR 0
-ISR_NO_ERR 1
-ISR_NO_ERR 2
-ISR_NO_ERR 3
-ISR_NO_ERR 4
-ISR_NO_ERR 5
-ISR_NO_ERR 6
-ISR_NO_ERR 7
-ISR_ERR 8
-ISR_NO_ERR 9
-ISR_ERR 10
-ISR_ERR 11
-ISR_ERR 12
-ISR_ERR 13
-ISR_ERR 14
-ISR_NO_ERR 15
-ISR_NO_ERR 16
-ISR_NO_ERR 17
-ISR_NO_ERR 18
-ISR_NO_ERR 19
-ISR_NO_ERR 20
-ISR_NO_ERR 21
-ISR_NO_ERR 22
-ISR_NO_ERR 23
-ISR_NO_ERR 24
-ISR_NO_ERR 25
-ISR_NO_ERR 26
-ISR_NO_ERR 27
-ISR_NO_ERR 28
-ISR_NO_ERR 29
-ISR_NO_ERR 30
-ISR_NO_ERR 31
-ISR_NO_ERR 32
-ISR_NO_ERR 33
-ISR_NO_ERR 34
-ISR_NO_ERR 35
-ISR_NO_ERR 36
-ISR_NO_ERR 37
-ISR_NO_ERR 38
-ISR_NO_ERR 39
-ISR_NO_ERR 40
-ISR_NO_ERR 41
-ISR_NO_ERR 42
-ISR_NO_ERR 43
-ISR_NO_ERR 44
-ISR_NO_ERR 45
-ISR_NO_ERR 46
-ISR_NO_ERR 47
-
-.extern isr_handler
-.type isr_handler, @function
-
-isr_common:
-    pusha
-    push %ds
-    push %es
-    push %fs
-    push %gs
-
-    movw $(2 << 3), %ax                     // GDTENTRY(2) = 0x0010 = data
-    movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
-    cld
-
-    push %esp
-    call isr_handler                        // defined in isr.c
-    add $4, %esp
-
-    pop %gs
-    pop %fs
-    pop %es
-    pop %ds
-
-    popa
-
-    add $8, %esp
-    iret
 
 
 /* Set the size of the _start symbol to the current location '.' minus its start. This is useful when debugging or when you implement call tracing. */
