@@ -36,19 +36,13 @@ void trap(trapframe* tf) {
 
 		All CPU interrupt is handled here:
 		   - CPU Exceptions (ISR 0 - ISR 31)
-		   - Hardware interrupt (IRQ)
+		   - Hardware interrupt (IRQ 0 - IRQ 15, mapped into ISR 32 - ISR 47)
 		   - Software interrupt (int)
 	*/
 	switch (tf->trapno) {
 	case T_IRQ0 + IRQ_TIMER:
-	{
 		ticks++;
 		break;
-	}
-	default:
-	{
-
-	}
 	}
 	// No need to acknowledge interrupt as we are using Automatic EOI
 	// outportb(PIC1, PIC_EOI);
