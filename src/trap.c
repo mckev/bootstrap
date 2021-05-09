@@ -69,7 +69,7 @@ typedef struct {
 } gatedesc;
 gatedesc idt[256];
 
-extern uint32_t vectors[];		// in trap_vectors.s
+extern uint32_t trap_vectors[];	// in trap_vectors.s
 
 #define STS_TG32		0xF		// 32-bit Trap Gate
 #define STS_IG32		0xE		// 32-bit Interrupt Gate 
@@ -87,7 +87,7 @@ extern uint32_t vectors[];		// in trap_vectors.s
 
 void trap_vectors_init() {
 	for (int i = 0; i < 256; i++) {
-		SETGATE(idt[i], 0, SEG_KCODE << 3, vectors[i], 0);
+		SETGATE(idt[i], 0, SEG_KCODE << 3, trap_vectors[i], 0);
 	}
 }
 
