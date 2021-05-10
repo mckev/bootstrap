@@ -1,11 +1,10 @@
 #include <stdint.h>
 
 #include "system.h"
+#include "util.h"
 #include "vga.h"
 
 
-const int VGA_WIDTH = 320;
-const int VGA_HEIGHT = 200;
 static uint8_t* vga_buffer = (uint8_t*)0xA0000;
 
 
@@ -27,6 +26,14 @@ void vga_set_palette_color(uint8_t palette_no, uint8_t r, uint8_t g, uint8_t b) 
 	outportb(PALETTE_DATA, b);
 }
 
-void vga_draw_pixel(int x, int y, uint8_t palette_no) {
-	vga_buffer[y * VGA_WIDTH + x] = palette_no;
+void vga_buffer_draw_pixel(uint8_t* buffer, int x, int y, uint8_t palette_no) {
+	buffer[y * VGA_WIDTH + x] = palette_no;
+}
+
+void vga_buffer_clear(uint8_t* buffer) {
+	memset(buffer, 0, VGA_WIDTH * VGA_HEIGHT);
+}
+
+void vga_draw_buffer(const uint8_t* buffer) {
+	memcpy(vga_buffer, buffer, VGA_WIDTH * VGA_HEIGHT);
 }

@@ -25,6 +25,8 @@ echo "Compiling kernel.c"
 rm -f kernel.o
 $GCC $GCC_OPTIONS -c kernel.c -o kernel.o
 OBJ_FILES="$OBJ_FILES kernel.o"
+$GCC $GCC_OPTIONS -c main_starfield.c -o main_starfield.o
+OBJ_FILES="$OBJ_FILES main_starfield.o"
 
 echo "Compiling int32.asm to access BIOS interrupt"
 rm -f int32.o
@@ -32,6 +34,9 @@ nasm -felf32 int32.asm -o int32.o
 OBJ_FILES="$OBJ_FILES int32.o"
 
 echo "Compiling other files"
+rm -f math.o
+$GCC $GCC_OPTIONS -c math.c -o math.o
+OBJ_FILES="$OBJ_FILES math.o"
 rm -f system.o
 $GCC $GCC_OPTIONS -c system.c -o system.o
 OBJ_FILES="$OBJ_FILES system.o"

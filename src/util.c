@@ -11,6 +11,14 @@ void memset(void* dst, uint8_t val, size_t count) {
 	}
 }
 
+void memcpy(void* dst, const void* src, size_t count) {
+	uint8_t* d = dst;
+	const uint8_t* s = src;
+	while (count-- > 0) {
+		*d++ = *s++;
+	}
+}
+
 size_t strlen(const char* str) {
 	size_t len = 0;
 	while (str[len]) {
