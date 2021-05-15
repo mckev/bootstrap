@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "kbd.h"
 #include "system.h"
 #include "timer.h"
 
@@ -42,6 +43,9 @@ void trap(trapframe* tf) {
 	switch (tf->trapno) {
 	case T_IRQ0 + IRQ_TIMER:
 		ticks++;
+		break;
+	case T_IRQ0 + IRQ_KBD:
+		kbd_intr();
 		break;
 	}
 	// No need to acknowledge interrupt as we are using Automatic EOI

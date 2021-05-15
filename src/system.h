@@ -23,12 +23,13 @@ typedef struct PACKED {
 
 
 // GDT Segments
-#define SEG_KCODE 1
-#define SEG_KDATA 2
+#define SEG_KCODE	1
+#define SEG_KDATA	2
 
 
 // IRQ
-#define IRQ_TIMER 0
+#define IRQ_TIMER	0
+#define IRQ_KBD		1
 
 
 // Writing and Reading I/O Port

@@ -50,7 +50,7 @@ static void terminal_linefeed() {
 	}
 }
 
-static void terminal_putchar(char ch) {
+void terminal_putchar(char ch) {
 	if (ch == '\n') {
 		terminal_linefeed();
 		return;
