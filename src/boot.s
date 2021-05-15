@@ -59,14 +59,14 @@ gdt_base:
     // GDT Entry 0: Null Segment Descriptor
     .long 0x00000000
     .long 0x00000000
-    // GDT Entry 1: Code Segment Descriptor
+    // GDT Entry 1: Code Segment Descriptor (SEG_KCODE)
     .word 0xFFFF                            // limit  0:15
     .word 0x0000                            // base   0:15
     .byte 0x00                              // base  16:23
     .byte 0b10011010                        // present, iopl/0, code, execute/read
     .byte 0b11001111                        // 4 KB granularity, 32-bit selector; limit 16:19
     .byte 0x00                              // base  24:31
-    // GDT Entry 2: Data Segment Descriptor
+    // GDT Entry 2: Data Segment Descriptor (SEG_KDATA)
     .word 0xFFFF                            // limit  0:15
     .word 0x0000                            // base   0:15
     .byte 0x00                              // base  16:23

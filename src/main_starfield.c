@@ -34,7 +34,7 @@ star_t stars[N_STARS];
 
 void stars_init() {
 	for (int i = 0; i < N_STARS; i++) {
-		stars[i].angle = rand_f(0.0, 2.0 * 3.1459);
+		stars[i].angle = rand_f(0.0, 2.0 * PI);
 		stars[i].speed = rand_f(10.0, 100.0);
 		stars[i].distance = rand_f(20.0, 200.0);
 		stars[i].lum = rand_f(0.3, 1.0);
@@ -46,14 +46,14 @@ void stars_update(float elapsed_time) {
 	for (int i = 0; i < N_STARS; i++) {
 		stars[i].distance += stars[i].speed * elapsed_time * (stars[i].distance / 100.0);
 		if (stars[i].distance > 200.0) {
-			stars[i].angle = rand_f(0.0, 2.0 * 3.1459);
+			stars[i].angle = rand_f(0.0, 2.0 * PI);
 			stars[i].speed = rand_f(10.0, 100.0);
 			stars[i].distance = rand_f(20.0, 200.0);
 			stars[i].lum = rand_f(0.3, 1.0);
 		}
 		int x = cos(stars[i].angle) * stars[i].distance + VGA_WIDTH / 2;
 		int y = sin(stars[i].angle) * stars[i].distance + VGA_HEIGHT / 2;
-		int palette_no = (int)(stars[i].lum * 64);	// palette 0 - 64 is grayscale from black to white
+		int palette_no = (int)(stars[i].lum * 63);	// palette 0 - 63 is grayscale from black to white
 		if (x >= 0 && x < VGA_WIDTH && y >= 0 && y < VGA_HEIGHT) {
 			vga_buffer_draw_pixel(buffer, x, y, palette_no);
 		}

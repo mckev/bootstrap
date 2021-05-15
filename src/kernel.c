@@ -8,12 +8,14 @@
 #endif
 
 
+#include "kbd.h"
 #include "system.h"
 #include "timer.h"
 #include "trap.h"
 
 
-extern int main_starfield();
+// extern int main_starfield();
+extern int main_terminal();
 
 
 void kernel_main() {
@@ -22,8 +24,10 @@ void kernel_main() {
 	trap_vectors_init();
 	idt_init();
 	timer_init();
+	kbd_init();
 	STI();
 
 	// Call main
-	main_starfield();
+	// main_starfield();
+	main_terminal();
 }
