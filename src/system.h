@@ -20,6 +20,7 @@ typedef struct PACKED {
 // Assembly
 #define CLI() asm("cli")
 #define STI() asm("sti")
+#define HLT() asm("hlt")
 
 
 // GDT Segments

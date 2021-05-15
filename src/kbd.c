@@ -5,7 +5,6 @@
 
 #include "kbd.h"
 #include "system.h"
-#include "terminal.h"
 #include "trap.h"
 
 
@@ -215,12 +214,12 @@ static char togglecode[256] = {
 };
 
 
-static int kbdgetc() {
+static int kbd_getc() {
 	static char* charcode[4] = {
 		normalmap, shiftmap, ctlmap, ctlmap
 	};
 
-	uint8_t st, data, ch;
+	uint8_t st, data, c;
 	st = inportb(KBSTATP);
 	if ((st & KBS_DIB) == 0) {
 		return -1;
@@ -246,16 +245,16 @@ static int kbdgetc() {
 
 	shift |= shiftcode[data];
 	shift ^= togglecode[data];
-	ch = charcode[shift & (CTL | SHIFT)][data];
+	c = charcode[shift & (CTL | SHIFT)][data];
 	if (shift & CAPSLOCK) {
-		if (ch >= 'a' && ch <= 'z') {
-			ch += 'A' - 'a';
+		if (c >= 'a' && c <= 'z') {
+			c += 'A' - 'a';
 		}
-		else if (ch >= 'A' && ch <= 'Z') {
-			ch += 'a' - 'A';
+		else if (c >= 'A' && c <= 'Z') {
+			c += 'a' - 'A';
 		}
 	}
-	return ch;
+	return c;
 }
 
 
@@ -263,11 +262,8 @@ void kbd_init() {
 	pic_enable(IRQ_KBD);
 }
 
-void kbd_intr() {
-	int ch = kbdgetc();
+void console_intr(int (*getc)());		// External function that wants to handle keyboard
 
-	// For now output to terminal
-	if (ch != NO) {
-		terminal_putchar((char)ch);
-	}
+void kbd_intr() {
+	console_intr(kbd_getc);
 }
