@@ -5,6 +5,9 @@
 #include <stdint.h>
 
 
+#define TERMINAL_WIDTH 80
+#define TERMINAL_HEIGHT 25
+
 // Hardware text mode color
 enum vga_color {
 	VGA_COLOR_BLACK = 0,
@@ -25,8 +28,12 @@ enum vga_color {
 	VGA_COLOR_WHITE = 15
 };
 
-inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg) {
+inline inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg) {
 	return fg | bg << 4;
+}
+
+static inline uint16_t vga_entry(unsigned char ch, uint8_t color) {
+	return (uint16_t)ch | (uint16_t)color << 8;
 }
 
 void terminal_init();

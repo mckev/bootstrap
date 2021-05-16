@@ -1,68 +1,70 @@
-#include <stdbool.h>
 #include <stdint.h>
 
+#include "system.h"
 #include "terminal.h"
 #include "util.h"
 
 
-static const size_t TERMINAL_WIDTH = 80;
-static const size_t TERMINAL_HEIGHT = 25;
-
 static uint16_t* terminal_buffer = (uint16_t*)0xB8000;
-static size_t terminal_row, terminal_column;
+static int terminal_row, terminal_column;
 static uint8_t terminal_color;
 
 
+#define CRTPORT 0x3d4
+static void terminal_set_cursor_pos(int x, int y) {
+	int pos = x + TERMINAL_WIDTH * y;
+	outportb(CRTPORT, 14);
+	outportb(CRTPORT + 1, pos >> 8);
+	outportb(CRTPORT, 15);
+	outportb(CRTPORT + 1, pos);
+}
+
 void terminal_init() {
-	terminal_row = 0;
-	terminal_column = 0;
 	terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
 	terminal_clear();
 }
 
-static inline uint16_t vga_entry(unsigned char ch, uint8_t color) {
-	return (uint16_t)ch | (uint16_t)color << 8;
-}
-
 void terminal_clear() {
-	for (size_t y = 0; y < TERMINAL_HEIGHT; y++) {
-		for (size_t x = 0; x < TERMINAL_WIDTH; x++) {
-			const size_t index = y * TERMINAL_WIDTH + x;
-			terminal_buffer[index] = vga_entry(' ', terminal_color);
-		}
+	terminal_row = 0;
+	terminal_column = 0;
+	for (int index = 0; index < TERMINAL_HEIGHT * TERMINAL_WIDTH; index++) {
+		terminal_buffer[index] = vga_entry(' ', terminal_color);
 	}
+	terminal_set_cursor_pos(0, 0);
 }
 
 void terminal_setcolor(uint8_t color) {
 	terminal_color = color;
 }
 
-static void terminal_putentryat(char ch, uint8_t color, size_t x, size_t y) {
-	const size_t index = y * TERMINAL_WIDTH + x;
-	terminal_buffer[index] = vga_entry(ch, color);
-}
-
 static void terminal_linefeed() {
 	terminal_column = 0;
 	if (++terminal_row == TERMINAL_HEIGHT) {
-		// We do not have scroll up function yet
-		terminal_row = 0;
+		// Scroll up
+		memcpy(terminal_buffer, terminal_buffer + TERMINAL_WIDTH, (TERMINAL_HEIGHT - 1) * TERMINAL_WIDTH * sizeof(uint16_t));
+		for (int index = (TERMINAL_HEIGHT - 1) * TERMINAL_WIDTH; index < TERMINAL_HEIGHT * TERMINAL_WIDTH; index++) {
+			terminal_buffer[index] = vga_entry(' ', terminal_color);
+		}
+		terminal_row = TERMINAL_HEIGHT - 1;
 	}
 }
 
 void terminal_putchar(char ch) {
 	if (ch == '\n') {
 		terminal_linefeed();
-		return;
 	}
-	terminal_putentryat(ch, terminal_color, terminal_column, terminal_row);
-	if (++terminal_column == TERMINAL_WIDTH) {
-		terminal_linefeed();
+	else {
+		const int index = terminal_row * TERMINAL_WIDTH + terminal_column;
+		terminal_buffer[index] = vga_entry(ch, terminal_color);
+		if (++terminal_column == TERMINAL_WIDTH) {
+			terminal_linefeed();
+		}
 	}
+	terminal_set_cursor_pos(terminal_column, terminal_row);
 }
 
-static void terminal_write(const char* str, size_t size) {
-	for (size_t i = 0; i < size; i++) {
+static void terminal_write(const char* str, int size) {
+	for (int i = 0; i < size; i++) {
 		terminal_putchar(str[i]);
 	}
 }
