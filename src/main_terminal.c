@@ -12,7 +12,7 @@ void console_intr(int (*getc)()) {
 		switch (c) {
 		default:
 			if (c != 0) {
-				terminal_putchar(c);
+				terminal_writechar(c);
 			}
 		}
 	}
