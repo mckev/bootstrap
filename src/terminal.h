@@ -28,7 +28,7 @@ enum vga_color {
 	VGA_COLOR_WHITE = 15
 };
 
-inline inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg) {
+static inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg) {
 	return fg | bg << 4;
 }
 
