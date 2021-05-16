@@ -9,6 +9,7 @@
 // Memory functions
 void memset(void* dst, uint8_t val, size_t count);
 void memcpy(void* dst, const void* src, size_t count);
+void memmove(void* dst, const void* src, size_t count);
 
 
 // String functions

@@ -19,6 +19,25 @@ void memcpy(void* dst, const void* src, size_t count) {
 	}
 }
 
+void memmove(void* dst, const void* src, size_t count) {
+	// Unlike memcpy(), memmove() can handle if dst overlaps the src.
+	// It needs to detect if we must copy memory addresses from high to low or low to high.
+	uint8_t* d = dst;
+	const uint8_t* s = src;
+	if (s < d && s + count > d) {
+		s += count;
+		d += count;
+		while (count-- > 0) {
+			*--d = *--s;
+		}
+	}
+	else {
+		while (count-- > 0) {
+			*d++ = *s++;
+		}
+	}
+}
+
 size_t strlen(const char* str) {
 	size_t len = 0;
 	while (str[len]) {

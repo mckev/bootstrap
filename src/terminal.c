@@ -36,7 +36,7 @@ void terminal_setcolor(uint8_t color) {
 }
 
 static void terminal_scrollup() {
-	memcpy(terminal_buffer, terminal_buffer + TERMINAL_WIDTH, (TERMINAL_HEIGHT - 1) * TERMINAL_WIDTH * sizeof(uint16_t));
+	memmove(terminal_buffer, terminal_buffer + TERMINAL_WIDTH, (TERMINAL_HEIGHT - 1) * TERMINAL_WIDTH * sizeof(uint16_t));
 	for (int pos = (TERMINAL_HEIGHT - 1) * TERMINAL_WIDTH; pos < TERMINAL_HEIGHT * TERMINAL_WIDTH; pos++) {
 		terminal_buffer[pos] = vga_entry(' ', terminal_color);
 	}
