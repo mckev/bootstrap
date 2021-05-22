@@ -1,22 +1,8 @@
 #include <stdbool.h>
 
+#include "kbd.h"
 #include "system.h"
 #include "terminal.h"
-
-
-void console_intr(int (*getc)()) {
-	// Ref: https://github.com/phf/xv6/blob/master/console.c at consoleintr()
-	int c;
-
-	while ((c = getc()) >= 0) {
-		switch (c) {
-		default:
-			if (c != 0) {
-				terminal_writechar(c);
-			}
-		}
-	}
-}
 
 
 int main_terminal() {
@@ -28,6 +14,10 @@ int main_terminal() {
 	// Endless loop to prevent kernel from exiting
 	while (true) {
 		HLT();				// to lower CPU usage
+		if (kbhit()) {
+			char ch = getch();
+			terminal_writechar(ch);
+		}
 	}
 
 	return 0;

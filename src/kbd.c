@@ -106,7 +106,7 @@ static char shiftmap[256] = {
 	NO,      NO,      NO,      NO,      NO,      NO,      NO,      NO
 };
 
-#define C(x) (x - '@')								// C('A') == Control-A
+#define C(x) (x - '@')				// C('A') == Control-A
 
 static char ctlmap[256] = {
 	NO,      NO,      NO,      NO,      NO,      NO,      NO,      NO,		// 0x00
@@ -262,8 +262,34 @@ void kbd_init() {
 	pic_enable(IRQ_KBD);
 }
 
-void console_intr(int (*getc)());		// External function that wants to handle keyboard
+#define INPUT_BUF 128
+static volatile struct {			// "volatile" is required here to prevent C compiler from optimizing "while(!kbhit())" into "while(true)". This variable is changed through interrupt mechanism.
+	char buf[INPUT_BUF];			// Circular buffer
+	uint8_t r;	// Read index
+	uint8_t e;	// Edit index
+} input;
 
 void kbd_intr() {
-	console_intr(kbd_getc);
+	// Ref: https://github.com/phf/xv6/blob/master/console.c at consoleintr()
+	int c;
+
+	while ((c = kbd_getc()) >= 0) {
+		switch (c) {
+		default:
+			if (c != 0) {
+				input.buf[input.e++ % INPUT_BUF] = c;
+			}
+		}
+	}
+}
+
+bool kbhit() {
+	return (input.r != input.e);
+}
+
+char getch() {
+	while (!kbhit()) {
+		// Blocking
+	}
+	return input.buf[input.r++ % INPUT_BUF];
 }
