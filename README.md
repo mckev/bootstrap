@@ -10,6 +10,7 @@ What works:
   - Set PIC Timer to call our function at regular interval (for timing purpose) via IRQ 0. I need to handle GDT, IDT, and IRQ for this.
   - Handle Keyboard press events via IRQ 1:
       - Change cursor location on text console by writing I/O port 0x3D4 and 0x3D5.
+      - Implement kbhit() through circular buffer.
   - Starfield animation:
       - Write pixels into a buffer before drawing into VGA memory address for smooth animation.
       - Must write our own rand(), cos(), and sin() functions, as standard C library cannot be used.
