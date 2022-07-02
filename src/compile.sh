@@ -3,8 +3,8 @@
 set -e
 
 
-AS="/home/kevin/opt/cross/bin/i686-elf-as"
-GCC="/home/kevin/opt/cross/bin/i686-elf-gcc"
+AS=~/opt/cross/bin/i686-elf-as
+GCC=~/opt/cross/bin/i686-elf-gcc
 GCC_OPTIONS="-std=gnu99 -ffreestanding -O2 -Wall -Wextra -masm=intel"
 OBJ_FILES=""
 

@@ -14,7 +14,7 @@
 #include "trap.h"
 
 
-// extern int main_starfield();
+extern int main_starfield();
 extern int main_terminal();
 
 
@@ -28,6 +28,6 @@ void kernel_main() {
 	STI();
 
 	// Call main
-	// main_starfield();
-	main_terminal();
+	main_starfield();
+	// main_terminal();
 }
