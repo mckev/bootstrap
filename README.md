@@ -2,7 +2,7 @@
 
 My attempt to access x86 hardware without interference from modern OS, just like the old days :)
 
-Main article: https://medium.com/@mckev
+Main article: https://medium.com/@mckev/create-our-own-kernel-2902a68b062b
 
 
 ## What works
@@ -34,7 +34,7 @@ This is what I understood about 32-bit x86 Protected Mode Kernel:
   size, and its permission whether can execute/read or read/write. Unlike 16-bit Real Mode where DS, ES, SS points to
   the upper 16-bit out of 20-bit address, on 32-bit Protected Mode DS, ES, FS, GS, SS refers to this table entry. GDT
   table is activated by executing assembly command "lgdt".
-- IDT: A table (8 bytes per interrupt) which desribes memory location of the function to execute for the interrupt.
+- IDT: A table (8 bytes per interrupt) which describes memory location of the function to execute for the interrupt.
   There are 256 interrupts (ISR). ISR 0 - 31 are reserved for CPU Exceptions, ISR 32 - 47 are typically for Hardware
   interrupts IRQ 0 - 15, and the rest can be used for OS interrupts. IDT table is activated by executing assembly
   command "lidt".
